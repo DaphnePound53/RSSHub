@@ -1,0 +1,33 @@
+name: RSS Hub Push Action
+on:
+  # schedule:
+  #   - cron: '0 * * * *' # 每小时运行一次
+  workflow_dispatch:
+permissions:
+  contents: write
+
+jobs:
+  run-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup NodeJs
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install RSSHub Dependencies
+        run: npm install --production
+
+      - name: Start RSSHub Server
+        env:
+          PORT: 1200
+        run: |
+          npm start &
+          npx wait-on tcp:1200 --timeout 60000
+      - name: Run Script (Node.js)
+        run: node scripts/push.js
+    
